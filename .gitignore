@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+JOURNAL.md
+CLAUDE.md
+AGENTS.md
+docs/
+.claude/
+.env
+.env.local
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+*.tsbuildinfo
