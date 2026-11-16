@@ -14,3 +14,4 @@ docs/
 !.vscode/extensions.json
 .DS_Store
 *.tsbuildinfo
+/src/generated

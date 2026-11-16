@@ -1,0 +1,106 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+// Адрес базы задаётся в prisma.config.ts (так в Prisma 7), не здесь.
+datasource db {
+  provider = "postgresql"
+}
+
+enum SkillLevel {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+
+  @@map("skill_level")
+}
+
+// Профиль: единственная «визитка». slug даёт стабильный ключ для seed (upsert)
+// и оставляет возможность держать несколько профилей.
+model Profile {
+  id          Int          @id @default(autoincrement())
+  slug        String       @unique
+  name        String
+  title       String
+  description String
+  location    String?
+  links       Link[]
+  skills      Skill[]
+  experiences Experience[]
+  projects    Project[]
+
+  @@map("profile")
+}
+
+// Ссылка на профессиональный ресурс (GitHub, LinkedIn, Telegram, hh и т.д.).
+model Link {
+  id        Int     @id @default(autoincrement())
+  profileId Int     @map("profile_id")
+  label     String
+  url       String
+  sortOrder Int     @default(0) @map("sort_order")
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Prisma не создаёт индекс по внешнему ключу сам; он нужен для выборки «все ссылки профилей» одним запросом.
+  @@index([profileId])
+  @@map("link")
+}
+
+model Skill {
+  id        Int         @id @default(autoincrement())
+  profileId Int         @map("profile_id")
+  name      String
+  category  String
+  level     SkillLevel?
+  // Пояснение к навыку («личные проекты», «читаю свободно, пишу B2»).
+  note      String?
+  sortOrder Int         @default(0) @map("sort_order")
+  profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("skill")
+}
+
+model Experience {
+  id           Int           @id @default(autoincrement())
+  profileId    Int           @map("profile_id")
+  company      String
+  position     String
+  // Даты без времени; endDate = null означает «по настоящее время».
+  startDate    DateTime      @map("start_date") @db.Date
+  endDate      DateTime?     @map("end_date") @db.Date
+  sortOrder    Int           @default(0) @map("sort_order")
+  profile      Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  achievements Achievement[]
+
+  @@index([profileId])
+  @@map("experience")
+}
+
+model Achievement {
+  id           Int        @id @default(autoincrement())
+  experienceId Int        @map("experience_id")
+  text         String
+  sortOrder    Int        @default(0) @map("sort_order")
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId])
+  @@map("achievement")
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  profileId    Int      @map("profile_id")
+  name         String
+  url          String
+  description  String
+  technologies String[]
+  sortOrder    Int      @default(0) @map("sort_order")
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("project")
+}
