@@ -1,4 +1,17 @@
 services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      # Внутри сети compose база доступна по имени сервиса и внутреннему порту 5432
+      DATABASE_URL: postgresql://${POSTGRES_USER:-profile}:${POSTGRES_PASSWORD:-profile}@db:5432/${POSTGRES_DB:-profile}?schema=public
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:17-alpine
     restart: unless-stopped
