@@ -22,7 +22,8 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "seed": "npm run build && node dist/seed/run-seed.js"
   },
   "dependencies": {
     "@apollo/server": "^5.5.2",
