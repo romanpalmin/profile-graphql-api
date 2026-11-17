@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -17,9 +18,10 @@ describe('GraphQL (e2e)', () => {
     await app.close();
   });
 
-  it('query hello возвращает строку', async () => {
-    const res = await request(app.getHttpServer()).post('/graphql').send({ query: '{ hello }' }).expect(200);
-    expect(res.body).toEqual({ data: { hello: 'Hello GraphQL!' } });
+  // Нужна заполненная база (npm run seed); полноценные e2e по профилю — в фазе 5.
+  it('query profile возвращает имя из базы', async () => {
+    const res = await request(app.getHttpServer()).post('/graphql').send({ query: '{ profile { name } }' }).expect(200);
+    expect(res.body).toEqual({ data: { profile: { name: 'Роман Пальмин' } } });
   });
 
   it('Apollo Sandbox отдаётся на GET /graphql в браузере', async () => {

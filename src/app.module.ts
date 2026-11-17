@@ -2,7 +2,6 @@ import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { HelloResolver } from './hello.resolver.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProfileModule } from './profile/profile.module.js';
 
@@ -22,6 +21,5 @@ import { ProfileModule } from './profile/profile.module.js';
       plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
     }),
   ],
-  providers: [HelloResolver],
 })
 export class AppModule {}
