@@ -3,9 +3,11 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { HelloResolver } from './hello.resolver.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
   imports: [
+    PrismaModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       // Code-first: схема строится из TypeScript-классов и хранится в памяти.
