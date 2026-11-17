@@ -4,10 +4,12 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { HelloResolver } from './hello.resolver.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProfileModule } from './profile/profile.module.js';
 
 @Module({
   imports: [
     PrismaModule,
+    ProfileModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       // Code-first: схема строится из TypeScript-классов и хранится в памяти.
