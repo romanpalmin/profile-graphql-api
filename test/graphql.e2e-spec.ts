@@ -96,4 +96,40 @@ describe('GraphQL (e2e)', () => {
       );
     }
   });
+
+  // Защита от N+1: считаем реальные SQL-запросы к базе, а не вызовы функций.
+  it('вложенный запрос experience → achievements делает 3 SQL-запроса (а не 1 + 1 + N)', async () => {
+    const prisma = app.get(PrismaService);
+    const queries: string[] = [];
+    const unsubscribe = prisma.onQuery((sql) => queries.push(sql));
+
+    const query =
+      '{ profile { name experience { company achievements { text } } } }';
+    await request(app.getHttpServer())
+      .post('/graphql')
+      .send({ query })
+      .expect(200);
+    unsubscribe();
+
+    const achievementQueries = queries.filter((sql) =>
+      sql.includes('FROM "public"."achievement"'),
+    );
+    expect(achievementQueries).toHaveLength(1); // один пакетный запрос на все места
+    expect(queries).toHaveLength(3); // profile + experience + achievement
+  });
+
+  // Ленивость: если клиент не просит достижения, запроса к achievement нет вообще.
+  it('без поля achievements запрос к таблице achievement не выполняется', async () => {
+    const prisma = app.get(PrismaService);
+    const queries: string[] = [];
+    const unsubscribe = prisma.onQuery((sql) => queries.push(sql));
+
+    await request(app.getHttpServer())
+      .post('/graphql')
+      .send({ query: '{ profile { experience { company } } }' })
+      .expect(200);
+    unsubscribe();
+
+    expect(queries.some((sql) => sql.includes('"achievement"'))).toBe(false);
+  });
 });
