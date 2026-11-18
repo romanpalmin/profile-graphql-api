@@ -118,3 +118,59 @@ query {
 ```
 
 Все поля и их описания видны во вкладке Schema в Apollo Sandbox.
+
+## Архитектура
+
+### Структура проекта
+
+```
+src/
+├── main.ts                      запуск приложения
+├── app.module.ts                корневой модуль, настройка GraphQL (Apollo, контекст с лоадерами)
+├── prisma/
+│   ├── prisma.module.ts         модуль доступа к базе (экспортирует PrismaService)
+│   └── prisma.service.ts        клиент Prisma: подключение, закрытие, подписка на SQL-запросы
+├── profile/
+│   ├── models/                  GraphQL-типы (Profile, Link, Skill, Experience, Achievement, Project)
+│   ├── profile.resolver.ts      запрос profile и вложенные поля (ссылки, навыки, опыт, проекты)
+│   ├── experience.resolver.ts   вложенное поле второго уровня: достижения
+│   ├── profile.service.ts       запросы к базе (Prisma), без знания о GraphQL
+│   ├── loaders/                 DataLoader для достижений и контекст GraphQL
+│   └── profile.module.ts
+├── seed/                        данные визитки и идемпотентное заполнение базы
+└── generated/                   клиент Prisma (создаётся командой prisma generate, в git не хранится)
+prisma/
+├── schema.prisma                схема базы данных
+└── migrations/                  миграции (применяются при старте контейнера)
+```
+
+### Слои
+
+Каждый слой отвечает за своё и ничего не знает о слоях выше.
+
+| Слой | Где | Отвечает за | Не знает о |
+|---|---|---|---|
+| API (resolver) | `*.resolver.ts` | разбор GraphQL-запроса, вызов сервиса, форма ответа | SQL, Prisma |
+| Сервис | `profile.service.ts` | получение данных: запросы к базе | GraphQL, HTTP |
+| Модели | `models/` | описание типов GraphQL-схемы | где хранятся данные |
+| Доступ к базе | `PrismaService` | подключение и запросы к PostgreSQL | бизнес-смыслу данных |
+
+Резолвер только делегирует сервису и берёт идентификатор родителя из `@Parent()`, поэтому его можно проверять unit-тестом без базы (`profile.resolver.spec.ts`).
+
+### Как выполняется запрос
+
+Запрос `{ profile { experience { company achievements { text } } } }`:
+
+```
+клиент ──► GraphQL (Apollo) ──► ProfileResolver.profile()         ──► ProfileService ──► SQL: profile       (1 запрос)
+                            └─► ProfileResolver.experience()      ──► ProfileService ──► SQL: experience    (1 запрос)
+                            └─► ExperienceResolver.achievements() × 12 мест работы
+                                       │ loader.load(id) копит id в течение одного тика
+                                       └─► ProfileService ──► SQL: achievement WHERE experience_id IN (...)  (1 запрос на все места)
+```
+
+Всего три SQL-запроса независимо от числа мест работы. Подробности решения (DataLoader, контекст на запрос) в разделе «Решения».
+
+### База данных
+
+Схема из шести таблиц: `profile`, `link`, `skill`, `experience`, `achievement`, `project`; два уровня вложенности `profile → experience → achievement`. ER-диаграмма и описание: [ARCHITECTURE.md](ARCHITECTURE.md).
