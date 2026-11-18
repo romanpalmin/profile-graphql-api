@@ -132,4 +132,25 @@ describe('GraphQL (e2e)', () => {
 
     expect(queries.some((sql) => sql.includes('"achievement"'))).toBe(false);
   });
+
+  // Лоадер живёт один HTTP-запрос: кэш не переходит из запроса в запрос (иначе данные устаревают).
+  it('повторный запрос снова ходит в базу: лоадер создаётся на каждый запрос', async () => {
+    const prisma = app.get(PrismaService);
+    const query = '{ profile { experience { achievements { text } } } }';
+    const countAchievementQueries = async () => {
+      const queries: string[] = [];
+      const unsubscribe = prisma.onQuery((sql) => queries.push(sql));
+      await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+      unsubscribe();
+      return queries.filter((sql) =>
+        sql.includes('FROM "public"."achievement"'),
+      ).length;
+    };
+
+    expect(await countAchievementQueries()).toBe(1);
+    expect(await countAchievementQueries()).toBe(1); // при общем лоадере здесь было бы 0 (кэш)
+  });
 });
