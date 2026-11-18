@@ -7,5 +7,7 @@ import { ProfileService } from './profile.service.js';
 @Module({
   imports: [PrismaModule],
   providers: [ProfileService, ProfileResolver, ExperienceResolver],
+  // AppModule берёт ProfileService, чтобы собрать GraphQL-контекст с лоадерами.
+  exports: [ProfileService],
 })
 export class ProfileModule {}

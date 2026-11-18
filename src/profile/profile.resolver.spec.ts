@@ -16,7 +16,7 @@ describe('ProfileResolver', () => {
       getSkills: vi.fn().mockResolvedValue([]),
       getExperiences: vi.fn().mockResolvedValue([]),
       getProjects: vi.fn().mockResolvedValue([]),
-      getAchievements: vi.fn().mockResolvedValue([]),
+      getAchievementsByExperienceIds: vi.fn().mockResolvedValue([]),
     };
     resolver = new ProfileResolver(service as unknown as ProfileService);
   });
@@ -31,8 +31,11 @@ describe('ProfileResolver', () => {
     ['skills', 'getSkills'],
     ['experience', 'getExperiences'],
     ['projects', 'getProjects'],
-  ] as const)('%s() запрашивает данные по id родителя', async (field, method) => {
-    await resolver[field](profile);
-    expect(service[method]).toHaveBeenCalledWith(7);
-  });
+  ] as const)(
+    '%s() запрашивает данные по id родителя',
+    async (field, method) => {
+      await resolver[field](profile);
+      expect(service[method]).toHaveBeenCalledWith(7);
+    },
+  );
 });

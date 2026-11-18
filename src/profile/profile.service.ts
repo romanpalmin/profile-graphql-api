@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 // Слой доступа к данным: только запросы к БД, без знания о GraphQL.
-// Пока наивная версия (по одному запросу на каждое вложенное поле): в фазе 4 заменим на пакетную.
+// Достижения грузятся пакетно (см. loaders/): так нет N+1 на вложенном поле experience → achievements.
 @Injectable()
 export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
@@ -13,24 +13,37 @@ export class ProfileService {
   }
 
   getLinks(profileId: number) {
-    return this.prisma.link.findMany({ where: { profileId }, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.link.findMany({
+      where: { profileId },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   getSkills(profileId: number) {
-    return this.prisma.skill.findMany({ where: { profileId }, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.skill.findMany({
+      where: { profileId },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   getExperiences(profileId: number) {
-    return this.prisma.experience.findMany({ where: { profileId }, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.experience.findMany({
+      where: { profileId },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   getProjects(profileId: number) {
-    return this.prisma.project.findMany({ where: { profileId }, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.project.findMany({
+      where: { profileId },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
-  getAchievements(experienceId: number) {
+  // Достижения сразу нескольких мест одним запросом (IN вместо N запросов WHERE =); вызывается из DataLoader.
+  getAchievementsByExperienceIds(experienceIds: readonly number[]) {
     return this.prisma.achievement.findMany({
-      where: { experienceId },
+      where: { experienceId: { in: [...experienceIds] } },
       orderBy: { sortOrder: 'asc' },
     });
   }
