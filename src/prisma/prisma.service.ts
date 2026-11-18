@@ -12,7 +12,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw new Error('Не задан DATABASE_URL: скопируйте .env.example в .env.');
     }
     // Prisma 7 ходит в базу через драйвер-адаптер; пул соединений настраивается в нём.
-    super({ adapter: new PrismaPg({ connectionString }) });
+    // PRISMA_LOG_QUERIES=true печатает каждый SQL-запрос в консоль (для разбора N+1 и отладки).
+    const log = process.env.PRISMA_LOG_QUERIES === 'true' ? [{ emit: 'stdout' as const, level: 'query' as const }] : [];
+    super({ adapter: new PrismaPg({ connectionString }), log });
   }
 
   // Вызывается Nest после сборки графа зависимостей: падаем на старте, а не на первом запросе.
