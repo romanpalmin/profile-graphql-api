@@ -11,3 +11,5 @@ docs
 .vscode
 .DS_Store
 *.tsbuildinfo
+# Сгенерированный Prisma Client собирается внутри образа (prisma generate), локальную копию не берём
+src/generated
