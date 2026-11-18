@@ -18,7 +18,13 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
+# Схема и миграции нужны для prisma migrate deploy при старте контейнера
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 # Не запускаем приложение от root
 USER node
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+# Старт: миграции → seed → приложение (см. docker-entrypoint.sh)
+ENTRYPOINT ["./docker-entrypoint.sh"]
