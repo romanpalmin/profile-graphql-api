@@ -11,6 +11,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Здоровье приложения: настоящий GraphQL-запрос внутри контейнера (curl в образе нет, поэтому node).
+    # Пока идут миграции и seed, контейнер «starting»; start_period не засчитывает эти попытки как провал.
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/graphql',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query:'{__typename}'})}).then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   db:
     image: postgres:17-alpine

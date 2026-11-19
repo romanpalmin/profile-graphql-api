@@ -75,7 +75,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Ровно то, что описано в README: миграции, seed и запуск API в контейнерах на пустой базе
-      - run: docker compose up -d --build
+      # --wait ждёт, пока у api и db статус healthy (healthcheck описан в docker-compose.yml)
+      - run: docker compose up -d --build --wait --wait-timeout 180
       - name: Ждём API и проверяем запрос профиля
         run: |
           # --retry-all-errors: пока API применяет миграции, порт уже открыт, но соединение сбрасывается (не «отказ»)
