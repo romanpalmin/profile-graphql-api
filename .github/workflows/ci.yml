@@ -1,0 +1,90 @@
+name: CI
+
+# Проверка на каждый push в main и на каждый pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Новый push отменяет ещё идущий прогон той же ветки
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (lint, сборка, unit, e2e)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: profile
+          POSTGRES_PASSWORD: profile
+          POSTGRES_DB: profile
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U profile -d profile"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://profile:profile@localhost:5432/profile?schema=public
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Клиент Prisma в git не хранится: без этого шага не соберётся ни приложение, ни тесты
+      - run: npm run prisma:generate
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      # Для e2e нужна база с миграциями и данными
+      - run: npm run prisma:deploy
+      - run: npm run seed
+      - run: npm run test:e2e
+
+  web:
+    name: Frontend (тесты, типы, сборка)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      # build включает проверку типов (vue-tsc)
+      - run: npm run build
+
+  docker:
+    name: Запуск с нуля (docker compose up)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      # Ровно то, что описано в README: миграции, seed и запуск API в контейнерах на пустой базе
+      - run: docker compose up -d --build
+      - name: Ждём API и проверяем запрос профиля
+        run: |
+          # --retry-all-errors: пока API применяет миграции, порт уже открыт, но соединение сбрасывается (не «отказ»)
+          curl -sf --retry 30 --retry-all-errors --retry-delay 2 \
+            http://localhost:3000/graphql \
+            -H 'content-type: application/json' \
+            -d '{"query":"{ profile { name skills { name } } }"}' | tee response.json
+          grep -q '"profile"' response.json
+      - name: Логи контейнеров при ошибке
+        if: failure()
+        run: docker compose logs --no-color
+      - run: docker compose down -v
