@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 
 export type Theme = 'light' | 'dark'
 
@@ -30,18 +30,31 @@ export function initTheme() {
   apply(theme.value)
 }
 
-/** Переключает тему. Класс theme-anim включает плавный переход цветов только на время смены. */
+/**
+ * Переключает тему и запоминает выбор.
+ * Плавность даёт View Transitions API: браузер снимает картинку страницы «до», применяет тему и растворяет старую
+ * картинку в новую. Так текст не «сливается» с фоном на середине перехода, как при покраске цветов по прямой.
+ * Если API нет или в системе включено «уменьшить движение», тема просто меняется сразу.
+ */
 export function toggleTheme() {
-  const root = document.documentElement
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!reduceMotion) {
-    root.classList.add('theme-anim')
-    window.setTimeout(() => root.classList.remove('theme-anim'), 400)
+  const next: Theme = theme.value === 'dark' ? 'light' : 'dark'
+
+  // nextTick: браузер должен увидеть уже обновлённую страницу (в том числе значок на кнопке) до конца перехода
+  const change = async () => {
+    theme.value = next
+    apply(next)
+    await nextTick()
   }
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  apply(theme.value)
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduceMotion && typeof document.startViewTransition === 'function') {
+    document.startViewTransition(change)
+  } else {
+    void change()
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY, theme.value)
+    localStorage.setItem(STORAGE_KEY, next)
   } catch {
     // не запоминаем, тема всё равно переключилась
   }
