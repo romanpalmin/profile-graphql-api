@@ -26,7 +26,7 @@ Apollo Sandbox на стенде: вложенный запрос и реаль�
 Нужен только Docker (с Docker Compose).
 
 ```bash
-git clone <адрес этого репозитория>
+git clone https://github.com/romanpalmin/profile-graphql-api.git
 cd profile-graphql-api
 docker compose up --build
 ```
