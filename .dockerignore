@@ -13,3 +13,5 @@ docs
 *.tsbuildinfo
 # Сгенерированный Prisma Client собирается внутри образа (prisma generate), локальную копию не берём
 src/generated
+# Фронт собирается и раздаётся отдельно (nginx), в образ API он не нужен
+web
