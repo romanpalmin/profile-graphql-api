@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { fetchProfile } from './api'
+import ProfileCard from './components/ProfileCard.vue'
 import type { Profile } from './types'
 
-// Временный экран F2: показывает три состояния запроса. В F3 данные превратятся в карточку профиля.
+// Три состояния запроса: загрузка, ошибка, данные (карточка профиля).
 const profile = ref<Profile | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
@@ -29,13 +30,6 @@ onUnmounted(() => controller.abort())
   <main>
     <p v-if="loading">Загрузка…</p>
     <p v-else-if="error" role="alert">Ошибка: {{ error }}</p>
-    <template v-else-if="profile">
-      <h1>{{ profile.name }}</h1>
-      <p>{{ profile.title }}</p>
-      <p>
-        Навыков: {{ profile.skills.length }}, мест работы: {{ profile.experience.length }}, проектов:
-        {{ profile.projects.length }}
-      </p>
-    </template>
+    <ProfileCard v-else-if="profile" :profile="profile" />
   </main>
 </template>
