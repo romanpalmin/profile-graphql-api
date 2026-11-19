@@ -1,0 +1,18 @@
+# Продакшен-вариант запуска (VPS). Используется поверх основного файла:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Отличия от локального запуска:
+#   - порт API слушает только 127.0.0.1 (наружу его отдаёт nginx по HTTPS);
+#   - порт базы наружу не публикуется;
+#   - пароль базы обязателен и берётся из .env на сервере (без значения по умолчанию).
+services:
+  api:
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-profile}:${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в .env}@db:5432/${POSTGRES_DB:-profile}?schema=public
+    # !override заменяет список портов целиком, а не дописывает к основному файлу
+    ports: !override
+      - '127.0.0.1:${API_HOST_PORT:-3210}:3000'
+
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в .env}
+    ports: !reset []
