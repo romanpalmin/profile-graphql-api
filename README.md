@@ -1,5 +1,7 @@
 # profile-graphql-api
 
+[![CI](https://github.com/romanpalmin/profile-graphql-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/romanpalmin/profile-graphql-api/actions/workflows/ci.yml)
+
 Цифровая визитка в виде backend-приложения: GraphQL API с профилем, ссылками, навыками, опытом работы (с достижениями) и проектами. Данные хранятся в PostgreSQL, база создаётся и заполняется автоматически при запуске. Через встроенный Apollo Sandbox можно выполнять запросы прямо в браузере.
 
 **Стек:** TypeScript, Node.js, NestJS, GraphQL (Apollo, code-first), Prisma, PostgreSQL, Docker. Небольшой фронт на Vue 3 + Vite (папка `web/`) показывает те же данные.
