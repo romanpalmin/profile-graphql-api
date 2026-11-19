@@ -1,0 +1,42 @@
+/* Общие цвета и фон. Палитра взята из иконки: тёмно-синий и голубой акцент. */
+:root {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --text: #1c2333;
+  --muted: #5b6478;
+  --line: #e1e6f0;
+  --accent: #3b5bdb;
+  --chip: #eef2ff;
+}
+
+/* Тема задаётся атрибутом data-theme на <html> (см. src/theme.ts): сохранённый выбор или тема системы. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #11162a;
+  --surface: #1a2140;
+  --text: #e8ecf8;
+  --muted: #9aa5c4;
+  --line: #2b3560;
+  --accent: #7aa2ff;
+  --chip: #232c52;
+}
+
+/* Плавная смена цветов только на время переключения темы (класс ставит toggleTheme) */
+:root.theme-anim,
+:root.theme-anim * {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.55;
+}

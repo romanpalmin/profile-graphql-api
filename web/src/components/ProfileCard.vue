@@ -70,19 +70,151 @@ const isExternal = (url: string) => /^https?:\/\//.test(url)
 
 <style scoped>
 .card {
-  max-width: 820px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
-  color: #1c2333;
+  padding: 32px 16px 64px;
 }
-h1 { margin: 0 0 4px; }
-h2 { margin: 32px 0 8px; border-bottom: 1px solid #d8dde8; padding-bottom: 4px; }
-h3 { margin: 16px 0 4px; font-size: 1.05rem; }
-.title { margin: 0; font-size: 1.15rem; }
-.muted { color: #5b6478; margin: 2px 0; }
-.links, .skills { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.achievements { margin: 6px 0 0; padding-left: 20px; }
-.achievements li { margin-bottom: 4px; }
+
+/* Шапка: имя крупно, должность акцентным цветом, ссылки «пилюлями» */
+.head {
+  padding-bottom: 8px;
+}
+h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  letter-spacing: -0.02em;
+}
+.title {
+  margin: 4px 0 0;
+  font-size: 1.2rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+.description {
+  margin: 16px 0;
+  max-width: 68ch;
+}
+.muted {
+  margin: 2px 0;
+  color: var(--muted);
+}
+.links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.links a {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+.links a:hover {
+  border-color: var(--accent);
+}
+
+/* Разделы: заголовок с акцентной чертой */
+section {
+  margin-top: 40px;
+}
+h2 {
+  margin: 0 0 16px;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+h2::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+/* Навыки: «пилюли» по категориям */
+.skill-group {
+  margin-bottom: 16px;
+}
+.skills {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.skills li {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 0.9rem;
+}
+.skill-name {
+  font-weight: 600;
+}
+.skills .muted {
+  font-size: 0.8rem;
+}
+
+/* Опыт: линия времени слева, у каждого места точка */
+.job {
+  position: relative;
+  margin: 0 0 24px 8px;
+  padding-left: 20px;
+  border-left: 2px solid var(--line);
+}
+.job::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.achievements {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+.achievements li {
+  margin-bottom: 4px;
+}
+
+/* Проекты: карточки */
+.project {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.project h3 a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.project h3 a:hover {
+  text-decoration: underline;
+}
+.project p {
+  margin: 4px 0;
+}
+
+@media (max-width: 520px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+}
 </style>

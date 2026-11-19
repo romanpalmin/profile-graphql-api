@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { fetchProfile } from './api'
 import ProfileCard from './components/ProfileCard.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import type { Profile } from './types'
 
 // Три состояния запроса: загрузка, ошибка, данные (карточка профиля).
@@ -27,6 +28,7 @@ onUnmounted(() => controller.abort())
 </script>
 
 <template>
+  <ThemeToggle />
   <main>
     <p v-if="loading">Загрузка…</p>
     <p v-else-if="error" role="alert">Ошибка: {{ error }}</p>
