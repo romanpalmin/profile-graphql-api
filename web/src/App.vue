@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { fetchProfile } from './api'
+import AppLoader from './components/AppLoader.vue'
 import ProfileCard from './components/ProfileCard.vue'
 import ThemeToggle from './components/ThemeToggle.vue'
 import type { Profile } from './types'
@@ -30,8 +31,21 @@ onUnmounted(() => controller.abort())
 <template>
   <ThemeToggle />
   <main>
-    <p v-if="loading">Загрузка…</p>
-    <p v-else-if="error" role="alert">Ошибка: {{ error }}</p>
+    <AppLoader v-if="loading" />
+    <p v-else-if="error" class="error" role="alert">Ошибка: {{ error }}</p>
     <ProfileCard v-else-if="profile" :profile="profile" />
   </main>
 </template>
+
+<style scoped>
+/* Ошибку тоже ставим по центру экрана, чтобы она не терялась в углу */
+.error {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  color: var(--text);
+}
+</style>
