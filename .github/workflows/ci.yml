@@ -84,6 +84,11 @@ jobs:
             -H 'content-type: application/json' \
             -d '{"query":"{ profile { name skills { name } } }"}' | tee response.json
           grep -q '"profile"' response.json
+      # Корректная остановка: API обрабатывает SIGTERM и выходит с кодом 0 (иначе docker stop убивает его, код 137)
+      - name: Остановка API (код выхода 0)
+        run: |
+          docker compose stop api
+          test "$(docker inspect "$(docker compose ps -aq api)" --format '{{.State.ExitCode}}')" = "0"
       - name: Логи контейнеров при ошибке
         if: failure()
         run: docker compose logs --no-color
